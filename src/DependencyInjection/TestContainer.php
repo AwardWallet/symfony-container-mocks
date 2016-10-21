@@ -2,7 +2,6 @@
 
 namespace RDV\SymfonyContainerMocks\DependencyInjection;
 
-use Prophecy\Prophet;
 use Symfony\Component\DependencyInjection\Container;
 
 class TestContainer extends Container
@@ -13,29 +12,16 @@ class TestContainer extends Container
     protected $mocked = array();
 
     /**
-     * @var Prophet
-     */
-    protected $prophet;
-
-    /**
      * @param string $id The service identifier
-     * @param string|null $class Class or interface fully qualified name
-     * @return \Prophecy\Prophecy\ObjectProphecy
+     * @param object $mock replace service with this object
      */
-    public function prophesize($id, $class = null)
+    public function mock($id, $mock)
     {
         if (array_key_exists($id, $this->mocked)) {
             throw new \InvalidArgumentException('This service already mocked and can have references');
         }
 
-        if (empty($class)) {
-            $class = $this->detectClass($id);
-        }
-
-        $mock = $this->getProphet()->prophesize($class);
-        $this->mocked[$id] = $mock->reveal();
-
-        return $mock;
+        $this->mocked[$id] = $mock;
     }
 
     /**
@@ -111,23 +97,11 @@ class TestContainer extends Container
     }
 
     /**
-     * @return Prophet
-     */
-    protected function getProphet()
-    {
-        if (!$this->prophet) {
-            $this->prophet = new Prophet();
-        }
-
-        return $this->prophet;
-    }
-
-    /**
      * @param string $service
      * @return string
      * @throws \BadMethodCallException
      */
-    protected function detectClass($service)
+    public function detectClass($service)
     {
         return DefinitionLoader::getClassName($service, $this);
     }
